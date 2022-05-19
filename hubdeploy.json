@@ -20,7 +20,6 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-05-01",
-            "resourceGroup": "[parameters('hubRG')]",
             "name": "[parameters('hubNetwork').name]",
             "location": "[resourceGroup().location]",
             "properties": {
