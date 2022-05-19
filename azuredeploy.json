@@ -127,6 +127,12 @@
                 "parameters": {
                      "spokeNetwork": {
                          "value": "[parameters('spokeNetwork')]"
+                     },
+                    "adminUserName": {
+                         "value": "[parameters('adminUserName')]"
+                     },
+                     "adminPassword": {
+                         "value": "[parameters('adminPassword')]"
                      }
                 }
             }

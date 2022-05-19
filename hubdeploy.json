@@ -44,7 +44,7 @@
             "name": "hub-storage-account",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork'), '')]"
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork').name)]"
             ],
             "sku": {
                 "name": "Standard_LRS",
