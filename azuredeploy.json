@@ -1,0 +1,248 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "The admin user name for both the Windows virtual machine."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The admin password for both the Windows machine."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_A1_v2"
+        },
+        "hubRG": {
+            "type": "string",
+            "defaultValue": "Hub-RG"
+        },
+        "spokeRG": {
+            "type": "string",
+              "defaultValue": "Spoke-RG"
+        },
+        "spokeRGTwo": {
+            "type": "string",
+              "defaultValue": "Spoke2-RG"
+        },
+        "hubNetwork": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-hub",
+                "addressPrefix": "10.0.0.0/16",
+                "subnetName": "snet-hub-resources",
+                "subnetPrefix": "10.0.0.0/24"
+            }
+        },
+        "spokeNetwork": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-one",
+                "addressPrefix": "10.100.0.0/16",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.100.0.0/24",
+                "subnetNsgName": "nsg-spoke-one-resources"
+            }
+        },
+        "spokeNetworkTwo": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-two",
+                "addressPrefix": "10.200.0.0/16",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.200.0.0/24",
+                "subnetNsgName": "nsg-spoke-two-resources"
+            }
+        }
+    },
+    "variables": {
+        "peering-name-hub-to-spoke-one": "hub-to-spoke-one",
+        "peering-name-hub-to-spoke-two": "hub-to-spoke-two",
+        "peering-name-spoke-to-hub-one": "spoke-one-to-hub",
+        "peering-name-spoke-to-hub-two": "spoke-two-to-hub",
+        "nicNameWindows": "client-vm",
+        "vmNameWindows": "client-vm",
+        "windowsOSVersion": "2019-Datacenter"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('hubRG')]",
+            "location": "westeurope",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('spokeRG')]",
+            "location": "germanywestcentral",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2021-04-01",
+            "name": "[parameters('spokeRGTwo')]",
+            "location": "northeurope",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "hubdeployment",
+            "resourceGroup": "[parameters('hubRG')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hubRG'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/lanicolas/hub-spoke/main/hubdeploy.json"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                     "hubNetwork": {
+                         "value": "[parameters('hubNetwork')]"
+                     }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "spokedeployment",
+            "resourceGroup": "[parameters('spokeRG')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('spokeRG'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/lanicolas/hub-spoke/main/spokedeploy.json"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                     "spokeNetwork": {
+                         "value": "[parameters('spokeNetwork')]"
+                     }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "spoketwodeployment",
+            "resourceGroup": "[parameters('hubRG')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('spokeRGTwo'))]"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/lanicolas/hub-spoke/main/spoketwodeploy.json"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                     "spokeNetworkTwo": {
+                         "value": "[parameters('spokeNetworkTwo')]"
+                     }
+                }
+            }
+        },        
+        {
+            "comments": "Virtual network peering hub to spoke one",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', variables('peering-name-hub-to-spoke-one'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "hubdeployment",
+                "spokedeployment",
+                "spoketwodeployment"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetwork').name)]"
+                }
+            }
+        },
+        {
+            "comments": "Virtual network peering hub to spoke two",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('hubNetwork').name, '/', variables('peering-name-hub-to-spoke-two'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "hubdeployment",
+                "spokedeployment",
+                "spoketwodeployment"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeNetworkTwo').name)]"
+                }
+            }
+        },
+        {
+            "comments": "Virtual network peering spoke one to hub",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('spokeNetwork').name, '/', variables('peering-name-spoke-to-hub-one'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "hubdeployment",
+                "spokedeployment",
+                "spoketwodeployment"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]"
+                }
+            }
+        },
+        {
+            "comments": "Virtual network peering spoke two to hub",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('spokeNetworkTwo').name, '/', variables('peering-name-spoke-to-hub-two'))]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "hubdeployment",
+                "spokedeployment",
+                "spoketwodeployment"
+            ],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]"
+                }
+            }
+        }           
+    ]
+}

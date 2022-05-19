@@ -1,0 +1,46 @@
+ {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "spokeNetworkTwo": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-two",
+                "addressPrefix": "10.200.0.0/16",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.200.0.0/24",
+                "subnetNsgName": "nsg-spoke-two-resources"
+            }
+        }
+    },
+    "resources": [
+        {
+            "comments": "Spoke virtual network, subnet, and diagnostic configuration",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('spokeNetworkTwo').name]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetworkTwo').subnetNsgName)]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('spokeNetworkTwo').addressPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('spokeNetworkTwo').subnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('spokeNetworkTwo').subnetPrefix]",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('spokeNetworkTwo').subnetNsgName)]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+ }
