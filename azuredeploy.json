@@ -140,7 +140,10 @@
                      },
                      "spokeNetwork": {
                          "value": "[parameters('spokeNetwork')]"
-                     }
+                     },
+                    "spokeRG": {
+                         "value": "[parameters('spokeRG')]"
+                    }
                 }
             }
         },

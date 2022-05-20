@@ -20,10 +20,14 @@
                 "subnetPrefix": "10.100.0.0/24",
                 "subnetNsgName": "nsg-spoke-one-resources"
             }
-        }
+        },
+        "spokeRG": {
+            "type": "string",
+              "defaultValue": "Spoke-RG"
+        }    
     },
     "variables": {
-        "vnet_storageSubnetId": "[ concat('Microsoft.Network/virtualNetworks/', parameters('spokeNetwork').name, '/subnets/', parameters('spokeNetwork').subnetName) ]"
+        "vnet_storageSubnetId": "[concat( '/subscriptions/', subscription().subscriptionId, 'resourceGroups/', parameters('spokeRG'), 'Microsoft.Network/virtualNetworks/', parameters('spokeNetwork').name, '/subnets/', parameters('spokeNetwork').subnetName) ]"
     },
     "resources": [
         {
