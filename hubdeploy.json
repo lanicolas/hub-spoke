@@ -23,7 +23,7 @@
         }
     },
     "variables": {
-        "vnet_storageSubnetId": "[ resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetwork').name, parameters('spokeNetwork').subnetName) ]"
+        "vnet_storageSubnetId": "[ resourceId('Microsoft.Network/virtualNetworks/', parameters('spokeNetwork').name, '/subnets/', parameters('spokeNetwork').subnetName) ]"
     },
     "resources": [
         {
