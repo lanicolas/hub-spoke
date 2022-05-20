@@ -47,7 +47,7 @@
             {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2021-09-01",
-            "name": "hub-storage-account",
+            "name": "portalhubstorageaccount",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubNetwork').name)]"
@@ -70,9 +70,8 @@
                     "bypass": "AzureServices",
                     "virtualNetworkRules": [
                         {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetwork').subnetName)]",
-                            "action": "Allow",
-                            "state": "Succeeded"
+                            "id": "[concat(parameters('spokeNetwork'),'/subnets/', parameters('spokeNetwork').subnetName)]",
+                            "action": "Allow"
                         }
                     ],
                     "ipRules": [],
