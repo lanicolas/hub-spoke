@@ -70,7 +70,7 @@
                     "bypass": "AzureServices",
                     "virtualNetworkRules": [
                         {
-                            "id": "[concat(parameters('spokeNetwork'),'/subnets/', parameters('spokeNetwork').subnetName)]",
+                            "id": "[concat(parameters('spokeNetwork').name,'/subnets/', parameters('spokeNetwork').subnetName)]",
                             "action": "Allow"
                         }
                     ],
