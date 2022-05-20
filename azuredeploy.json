@@ -91,7 +91,8 @@
             "name": "hubdeployment",
             "resourceGroup": "[parameters('hubRG')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hubRG'))]"
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hubRG'))]",
+                "[resourceId('Microsoft.Resources/deployments', 'spokedeployment')]"
             ],
             "properties": {
                 "expressionEvaluationOptions": {
@@ -104,6 +105,9 @@
                 "parameters": {
                      "hubNetwork": {
                          "value": "[parameters('hubNetwork')]"
+                     },
+                     "spokeNetwork": {
+                         "value": "[parameters('spokeNetwork')]"
                      }
                 }
             }
@@ -133,7 +137,10 @@
                      },
                      "adminPassword": {
                          "value": "[parameters('adminPassword')]"
-                     }
+                     },
+                    "vmSize": {
+                        "value": "[parameters('vmSize')]"
+                    }
                 }
             }
         },

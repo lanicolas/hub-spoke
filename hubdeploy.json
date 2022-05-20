@@ -2,10 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "hubRG": {
-            "type": "string",
-            "defaultValue": "Hub-RG"
-        },
         "hubNetwork": {
             "type": "object",
             "defaultValue": {
@@ -13,6 +9,16 @@
                 "addressPrefix": "10.0.0.0/16",
                 "subnetName": "snet-hub-resources",
                 "subnetPrefix": "10.0.0.0/24"
+            }
+        },
+        "spokeNetwork": {
+            "type": "object",
+            "defaultValue": {
+                "name": "vnet-spoke-one",
+                "addressPrefix": "10.100.0.0/16",
+                "subnetName": "snet-spoke-resources",
+                "subnetPrefix": "10.100.0.0/24",
+                "subnetNsgName": "nsg-spoke-one-resources"
             }
         }
     },
@@ -64,7 +70,7 @@
                     "bypass": "AzureServices",
                     "virtualNetworkRules": [
                         {
-                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('hubNetwork').subnetName)]",
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetwork').subnetName)]",
                             "action": "Allow",
                             "state": "Succeeded"
                         }
