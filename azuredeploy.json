@@ -88,33 +88,6 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2021-04-01",
-            "name": "hubdeployment",
-            "resourceGroup": "[parameters('hubRG')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hubRG'))]",
-                "[resourceId('Microsoft.Resources/deployments', 'spokedeployment')]"
-            ],
-            "properties": {
-                "expressionEvaluationOptions": {
-                    "scope": "Inner"
-                },
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/lanicolas/hub-spoke/main/hubdeploy.json"
-                },
-                "mode": "Incremental",
-                "parameters": {
-                     "hubNetwork": {
-                         "value": "[parameters('hubNetwork')]"
-                     },
-                     "spokeNetwork": {
-                         "value": "[parameters('spokeNetwork')]"
-                     }
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2021-04-01",
             "name": "spokedeployment",
             "resourceGroup": "[parameters('spokeRG')]",
             "dependsOn": [
@@ -141,6 +114,33 @@
                     "vmSize": {
                         "value": "[parameters('vmSize')]"
                     }
+                }
+            }
+        },
+                {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2021-04-01",
+            "name": "hubdeployment",
+            "resourceGroup": "[parameters('hubRG')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('hubRG'))]",
+                "spokedeployment"
+            ],
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "Inner"
+                },
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/lanicolas/hub-spoke/main/hubdeploy.json"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                     "hubNetwork": {
+                         "value": "[parameters('hubNetwork')]"
+                     },
+                     "spokeNetwork": {
+                         "value": "[parameters('spokeNetwork')]"
+                     }
                 }
             }
         },

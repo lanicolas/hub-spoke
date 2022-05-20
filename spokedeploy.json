@@ -30,8 +30,10 @@
         }
     },
     "variables": {
-        "nicNameWindows": "client-vm",
+        "nicNameWindows": "client-vm-nic",
         "vmNameWindows": "client-vm",
+        "publicIPName": "client-vm-pip",
+        "dnsLabelPrefix": "[toLower(format('{0}-{1}', variables('vmNameWindows'), uniqueString(resourceGroup().id, variables('vmNameWindows'))))]",
         "windowsOSVersion": "2019-Datacenter"
     },
     "resources": [
@@ -79,8 +81,23 @@
             }
         },
         {
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2021-02-01",
+        "name": "[variables('publicIpName')]",
+        "location": "[resourceGroup().location]",
+        "sku": {
+            "name": "Basic"
+        },
+        "properties": {
+            "publicIPAllocationMethod": "Dynamic",
+            "dnsSettings": {
+            "domainNameLabel": "[variables('dnsLabelPrefix')]"
+            }
+        }
+        },
+        {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2021-03-01",
             "name": "[variables('vmNameWindows')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
