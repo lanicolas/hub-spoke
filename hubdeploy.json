@@ -22,6 +22,9 @@
             }
         }
     },
+    "variables": {
+        "vnet_storageSubnetId": "[ resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('spokeNetwork').name, parameters('spokeNetwork').subnetName) ]"
+    },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
@@ -70,7 +73,7 @@
                     "bypass": "AzureServices",
                     "virtualNetworkRules": [
                         {
-                            "id": "[concat(parameters('spokeNetwork').name,'/subnets/', parameters('spokeNetwork').subnetName)]",
+                            "id": "[ variables('vnet_storageSubnetId') ]",
                             "action": "Allow"
                         }
                     ],
